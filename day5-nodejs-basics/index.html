@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Socket.IO chat</title>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            html { height: 100%; }
+            body { font: 13px Helvetica, Arial; height: 100%; }
+            form { display: flex; background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+            form input { border: 0; padding: 10px; width: 90%; border-right: 3px solid #000; }
+            form button { width: 10%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+            ul { list-style-type: none; }
+            li { padding: 5px 10px; }
+            #content { display: flex; flex-direction: row; height: 94.3%; border: 3px solid #000; }
+            #messages { width: 90%; height: 100%; border-right: 3px solid #000; overflow-y: auto; }
+            #messages li:nth-child(odd) { background: #eee; }
+            #online { width: 10%; height: 100%; overflow-y: auto;}
+            #online li { list-style-type: circle; }
+        </style>
+    </head>
+    <body>
+        <div id="content">
+            <ul id="messages"></ul>
+            <div id="online"></div>
+        </div>
+        <form action="">
+            <input id="message" autocomplete="off" placeholder="Nickname"/><button>Send</button>
+        </form>
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+        <script>
+            var message = $('#message'), messages = $('#messages');
+            var socket = undefined;
+            var privateMessageReceiver = '';
+            message.focus();
+            $('form').submit(function() {
+                var messageText = message.val();
+                if (messageText == '') {
+                    return false;
+                }
+                if (socket) {
+                    message.val('');
+                    var selected = $('#selected');
+                    if (selected.length == 0) {
+                        messages.append($('<li>').text(messageText)).scrollTop(9999);
+                        socket.emit('chat message', messageText);
+                    } else {
+                        messages.append($('<li>').text('private message to ' + selected.text() + ': ' + messageText)).scrollTop(9999);
+                        socket.emit('private message', {id: selected.attr('value'), text: messageText});
+                    }
+                } else {
+                    socket = io();
+                    socket.on('chat message', function(msg) {
+                        messages.append($('<li>').text(msg)).scrollTop(9999);
+                    });
+                    socket.on('private message', function(msg) {
+                        console.log(socket.id);
+                        console.log(msg);
+                    });
+                    socket.on('update online', function(msg) {
+                        var online = $('#online');
+                        online.empty();
+                        var onlineUsers = JSON.parse(msg);
+                        for (var id in onlineUsers) {
+                            online.append($('<li>').text(onlineUsers[id]).attr('value', id).click(function() {
+                                var selected = $('#selected');
+                                if (selected.length == 0) {
+                                    $(this).attr('id', 'selected').css('list-style-type', 'disc');
+                                } else {
+                                    if (selected[0] == this) {
+                                        $(this).removeAttr('id').css('list-style-type', 'circle');
+                                    } else {
+                                        $(this).parent().children().removeAttr('id').css('list-style-type', 'circle');
+                                        $(this).attr('id', 'selected').css('list-style-type', 'disc');
+                                    }
+                                }
+                                message.focus();
+                            })).scrollTop(9999);
+                        }
+                    });
+                    message.attr('placeholder', '').val('');
+                    socket.emit('name message', messageText);
+                }
+                return false;
+            });
+        </script>
+    </body>
+</html>
