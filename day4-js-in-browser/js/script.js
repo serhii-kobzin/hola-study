@@ -5,6 +5,7 @@ var removeCompletedTasks = document.getElementById('remove_completed_tasks');
 var allTasks = document.getElementById('all_tasks');
 var activeTasks = document.getElementById('active_tasks');
 var completeTasks = document.getElementById('complete_tasks');
+var filter = 'all';
 
 completeAllTasks.onclick = function() {
     var tasks = tasksList.getElementsByClassName('task');
@@ -46,7 +47,6 @@ removeCompletedTasks.onclick = function() {
 };
 
 allTasks.onclick = function() {
-    console.log('1');
     allTasks.style.backgroundColor = '#ad6069';
     activeTasks.style.backgroundColor = '#fcfcfc';
     completeTasks.style.backgroundColor = '#fcfcfc';
@@ -54,6 +54,8 @@ allTasks.onclick = function() {
     for (var i = 0; i < tasks.length; ++i) {
         tasks[i].style.display = '';
     }
+    filter = 'all';
+    saveToLocalStorage();
 };
 
 activeTasks.onclick = function() {
@@ -68,6 +70,8 @@ activeTasks.onclick = function() {
             tasks[i].style.display = '';
         }
     }
+    filter = 'active';
+    saveToLocalStorage();
 };
 
 completeTasks.onclick = function() {
@@ -82,6 +86,8 @@ completeTasks.onclick = function() {
             tasks[i].style.display = 'none';
         }
     }
+    filter = 'complete';
+    saveToLocalStorage();
 };
 
 function addTask(complete, text) {
@@ -201,16 +207,32 @@ function saveToLocalStorage() {
         tasks[i] = [allTasks[i].getElementsByClassName('task_complete')[0].checked, allTasks[i].getElementsByClassName('task_text')[0].innerHTML];
     }
     localStorage.setItem('tasks', JSON.stringify(tasks));
+    localStorage.setItem('filter', filter);
 }
 
 function restoreFromLocalStorage() {
+    filter = localStorage.getItem('filter');
     var tasks = JSON.parse(localStorage.getItem('tasks'));
     for (var i = 0; i < tasks.length; ++i) {
-        addTask(tasks[i][0], tasks[i][1]);
+        addTaskListItem(tasks[i][0], tasks[i][1]);
+    }
+}
+
+function applyFilter() {
+    switch (filter) {
+        case 'all':
+            allTasks.click();
+            break;
+        case 'active':
+            activeTasks.click();
+            break;
+        case 'complete':
+            completeTasks.click();
+            break;
     }
 }
 
 restoreFromLocalStorage();
 updateActiveTasksCounter();
+applyFilter();
 newTaskTextEditor.focus();
-allTasks.click();
