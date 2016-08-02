@@ -1,1 +1,1 @@
-$('div').html('dsfdsfdsf');
+console.log($('*'));
