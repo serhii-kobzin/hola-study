@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+    <head>
+        <meta charset="UTF-8">
+        <title>ToDo List</title>
+        <link href="css/style.css" type="text/css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-2.2.0.min.js"></script>
+    <script src="js/script.js" defer></script>
+    </head>
+    <body>
+        <div id="new_task">
+            <input type="checkbox" id="complete_all_tasks">
+            <input type="text" id="new_task_text_editor">
+        </div>
+        <div id="tasks">
+            <div id="tasks_list">
+            </div>
+            <div id="tasks_manager">
+                <div id="active_tasks_counter">
+                    Remain tasks: 0
+                </div>
+                <div id="tasks_filter">
+                    <div id="all_tasks">
+                        All
+                    </div>
+                    <div id="active_tasks">
+                        Active
+                    </div>
+                    <div id="complete_tasks">
+                        Complete
+                    </div>
+                </div>
+                <div id="remove_completed_tasks">
+                    Remove completed tasks
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

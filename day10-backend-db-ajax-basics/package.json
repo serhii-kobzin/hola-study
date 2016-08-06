@@ -1,0 +1,10 @@
+{
+  "name": "Online_ToDo_List",
+  "version": "0.0.1",
+  "description": "online todo list",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.10.2",
+    "mysql": "^2.11.1"
+  }
+}
