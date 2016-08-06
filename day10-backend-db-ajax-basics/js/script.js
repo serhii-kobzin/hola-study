@@ -15,15 +15,8 @@ function updateUserRequest(userId, userName, userPassword, filter) {
             filter: filter
         }),
         dataType: 'json',
-        success: function (response) {
-            console.log(response);
-            if (response.length) {
-                alert('Wrong user name and password!');
-                return;
-            }
-            userId = response.data[0].user_id;
-            filter = response.data[0].filter;
-            readRequest(userId, filter);
+        success: function () {
+            console.log('ready');
         }
     });
 }
@@ -236,7 +229,7 @@ $('#new_task_text_editor').keyup(function (event) {
 $('#all_tasks').click(function () {
     $(this).css('backgroundColor', '#ad6069');
     $('#active_tasks').css('backgroundColor', '#fcfcfc');
-    $('#complete_tasks').css('backgroundColor', '#fcfcfc');
+    $('#completed_tasks').css('backgroundColor', '#fcfcfc');
     filter = 'all';
     readRequest(userId, filter);
 });
@@ -244,97 +237,18 @@ $('#all_tasks').click(function () {
 $('#active_tasks').click(function () {
     $('#all_tasks').css('backgroundColor', '#fcfcfc');
     $(this).css('backgroundColor', '#ad6069');
-    $('#complete_tasks').css('backgroundColor', '#fcfcfc');
+    $('#completed_tasks').css('backgroundColor', '#fcfcfc');
     filter = 'active';
     readRequest(userId, filter);
 });
 
-$('#complete_tasks').click(function () {
+$('#completed_tasks').click(function () {
     $('#all_tasks').css('backgroundColor', '#fcfcfc');
     $('#active_tasks').css('backgroundColor', '#fcfcfc');
     $(this).css('backgroundColor', '#ad6069');
     filter = 'complete';
     readRequest(userId, filter);
 });
-
-// function addTaskListItem(complete, text) {
-//     // Create checkbox
-//     var completeTask = document.createElement('input');
-//     completeTask.type = 'checkbox';
-//     completeTask.checked = complete;
-//     completeTask.className = 'task_complete';
-//     completeTask.onclick = function() {
-//         taskText.style.textDecoration = (this.checked) ? 'line-through' : 'none';
-//         updateActiveTasksCounter();
-//     };
-//
-//     // Create text
-//     var taskText = document.createElement('div');
-//     taskText.innerHTML = text;
-//     taskText.className = 'task_text';
-//     taskText.style.textDecoration = (complete) ? 'line-through' : 'none';
-//     taskText.style.display = 'block';
-//     taskText.ondblclick = function() {
-//         taskTextEditor.value = this.innerHTML;
-//         this.style.display = 'none';
-//         taskTextEditor.style.display = 'block';
-//         taskTextEditor.focus();
-//     };
-//
-//     //Create text editor
-//     var taskTextEditor = document.createElement('input');
-//     taskTextEditor.style = 'text';
-//     taskTextEditor.className = 'task_text_editor';
-//     taskTextEditor.style.textDecoration = (complete) ? 'line-through' : 'none';
-//     taskTextEditor.style.display = 'none';
-//     taskTextEditor.onkeyup = function(event) {
-//         if (event.keyCode == 27) {
-//             this.style.display = 'none';
-//             taskText.style.display = 'block';
-//             return;
-//         }
-//         if (event.keyCode != 13) {
-//             return;
-//         }
-//         if (this.value == '') {
-//             alert('Task is empty!');
-//             return;
-//         }
-//         taskText.innerHTML = this.value;
-//         this.style.display = 'none';
-//         taskText.style.display = 'block';
-//         saveToLocalStorage();
-//     };
-//     taskTextEditor.onblur = function() {
-//         this.style.display = 'none';
-//         taskText.style.display = 'block';
-//     };
-//
-//     // Create X
-//     var removeTask = document.createElement('div');
-//     removeTask.innerHTML = 'x';
-//     removeTask.className = 'task_remove';
-//     removeTask.onclick = function() {
-//         task.remove();
-//         updateActiveTasksCounter();
-//         saveToLocalStorage();
-//     };
-//
-//     // Create new task and append it on the task list
-//     var task = document.createElement('div');
-//     task.className = 'task';
-//     task.appendChild(completeTask);
-//     task.appendChild(taskText);
-//     task.appendChild(taskTextEditor);
-//     task.appendChild(removeTask);
-//     task.onmouseover = function() {
-//         removeTask.style.visibility = 'visible';
-//     };
-//     task.onmouseout = function() {
-//         removeTask.style.visibility = 'hidden';
-//     };
-//     tasksList.appendChild(task);
-// }
 
 function updateActiveTasksCounter() {
     var tasks = tasksList.getElementsByClassName('task');

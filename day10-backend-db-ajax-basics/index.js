@@ -13,10 +13,6 @@ var connection = mySQL.createConnection({
     database: 'todolist'
 });
 
-function actionWithBase(data, callback) {
-
-}
-
 app.use('/js', express.static(__dirname + '/js'));
 app.use('/css', express.static(__dirname + '/css'));
 app.use(bodyParser.json());
@@ -62,6 +58,16 @@ app.post('/delete/', function(req, res) {
             throw err;
         }
         res.send(JSON.stringify({}));
+    });
+});
+
+app.post('/update/user/', function(req, res) {
+    console.log('update user');
+    connection.query('UPDATE users SET user_name = ?, user_password = ?, filter = ? WHERE user_id = ?', [req.body.user_name, req.body.user_password, req.body.filter, req.body.user_id], function(err, result) {
+        if (err) {
+            throw err;
+        }
+        res.send(JSON.stringify({data: result}));
     });
 });
 
