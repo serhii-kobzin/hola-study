@@ -39,12 +39,12 @@ function readUserRequest(userName, userPassword) {
             }
             userId = response.data[0].user_id;
             filter = response.data[0].filter;
-            readRequest(userId, filter);
+            readTasksRequest(userId, filter);
         }
     });
 }
 
-function createRequest(userId, taskText) {
+function createTaskRequest(userId, taskText) {
     var taskComplete = false;
     $.ajax({
         method: 'POST',
@@ -62,7 +62,7 @@ function createRequest(userId, taskText) {
     });
 }
 
-function updateRequest(taskId, taskText, taskComplete) {
+function updateTaskRequest(taskId, taskText, taskComplete) {
     $.ajax({
         method: 'POST',
         url: 'http://localhost:3000/update/',
@@ -79,7 +79,7 @@ function updateRequest(taskId, taskText, taskComplete) {
     });
 }
 
-function readRequest(userId, filter) {
+function readTasksRequest(userId, filter) {
     $.ajax({
         method: 'POST',
         url: 'http://localhost:3000/read/',
@@ -95,7 +95,7 @@ function readRequest(userId, filter) {
     });
 }
 
-function deleteRequest(taskId) {
+function deleteTaskRequest(taskId) {
     $.ajax({
         method: 'POST',
         url: 'http://localhost:3000/delete/',
@@ -150,7 +150,7 @@ function addTaskListItem(taskId, taskText, taskComplete) {
         hideTaskRemove(taskId);
     }).append($('<input>').attr('type', 'checkbox').attr('class', 'task_complete').prop('checked', taskComplete).click(function () {
         taskComplete = $(this).prop('checked');
-        updateRequest(taskId, taskText, taskComplete);
+        updateTaskRequest(taskId, taskText, taskComplete);
     })).append($('<div>').attr('class', 'task_text').text(taskText).css('text-decoration', (taskComplete) ? 'line-through' : 'none').css('display', 'block').dblclick(function () {
         showTaskTextEditor(taskId);
     })).append($('<input>').attr('type', 'text').attr('class', 'task_text_editor').val(taskText).css('text-decoration', (taskComplete) ? 'line-through' : 'none').css('display', 'none').blur(function () {
@@ -170,9 +170,9 @@ function addTaskListItem(taskId, taskText, taskComplete) {
             return;
         }
         hideTaskTextEditor(taskId);
-        updateRequest(taskId, taskText, taskComplete);
+        updateTaskRequest(taskId, taskText, taskComplete);
     })).append($('<div>').text('x').attr('class', 'task_remove').click(function () {
-        deleteRequest(taskId);
+        deleteTaskRequest(taskId);
     })));
     updateCompleteAllTasks();
 }
@@ -194,7 +194,7 @@ $('#complete_all_tasks').click(function () {
 });
 
 $('#remove_completed_tasks').click(function () {
-    readRequest(userId, 'complete');
+    readTasksRequest(userId, 'complete');
 });
 
 $('#new_task_text_editor').keyup(function (event) {
@@ -211,7 +211,7 @@ $('#new_task_text_editor').keyup(function (event) {
         return;
     }
     $(this).val('');
-    createRequest(userId, taskText);
+    createTaskRequest(userId, taskText);
 });
 
 // removeCompletedTasks.onclick = function() {
@@ -231,7 +231,7 @@ $('#all_tasks').click(function () {
     $('#active_tasks').css('backgroundColor', '#fcfcfc');
     $('#completed_tasks').css('backgroundColor', '#fcfcfc');
     filter = 'all';
-    readRequest(userId, filter);
+    readTasksRequest(userId, filter);
 });
 
 $('#active_tasks').click(function () {
@@ -239,7 +239,7 @@ $('#active_tasks').click(function () {
     $(this).css('backgroundColor', '#ad6069');
     $('#completed_tasks').css('backgroundColor', '#fcfcfc');
     filter = 'active';
-    readRequest(userId, filter);
+    readTasksRequest(userId, filter);
 });
 
 $('#completed_tasks').click(function () {
@@ -247,7 +247,7 @@ $('#completed_tasks').click(function () {
     $('#active_tasks').css('backgroundColor', '#fcfcfc');
     $(this).css('backgroundColor', '#ad6069');
     filter = 'complete';
-    readRequest(userId, filter);
+    readTasksRequest(userId, filter);
 });
 
 function updateActiveTasksCounter() {
