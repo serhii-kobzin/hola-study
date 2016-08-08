@@ -1,7 +1,24 @@
-const USER_NAME = 'sergey';
-const USER_PASSWORD = 'sergey';
+var userId, filter;
 
-var userName, filter;
+function createUserRequest(userName, userPassword) {
+    var filter = 'all';
+    $.ajax({
+        method: 'POST',
+        url: 'http://localhost:3000/create/user/',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            user_name: userName,
+            user_password: userPassword,
+            filter: filter
+        }),
+        dataType: 'json',
+        success: function (response) {
+            console.log('create user');
+            userId = response.data;
+            readTasksRequest(userId, filter);
+        }
+    });
+}
 
 function updateUserRequest(userId, userName, userPassword, filter) {
     $.ajax({
@@ -16,7 +33,6 @@ function updateUserRequest(userId, userName, userPassword, filter) {
         }),
         dataType: 'json',
         success: function () {
-            console.log('ready');
         }
     });
 }
@@ -48,7 +64,7 @@ function createTaskRequest(userId, taskText) {
     var taskComplete = false;
     $.ajax({
         method: 'POST',
-        url: 'http://localhost:3000/create/',
+        url: 'http://localhost:3000/create/task/',
         contentType: 'application/json',
         data: JSON.stringify({
             user_id: userId,
@@ -65,7 +81,7 @@ function createTaskRequest(userId, taskText) {
 function updateTaskRequest(taskId, taskText, taskComplete) {
     $.ajax({
         method: 'POST',
-        url: 'http://localhost:3000/update/',
+        url: 'http://localhost:3000/update/task/',
         contentType: 'application/json',
         data: JSON.stringify({
             task_id: taskId,
@@ -82,7 +98,7 @@ function updateTaskRequest(taskId, taskText, taskComplete) {
 function readTasksRequest(userId, filter) {
     $.ajax({
         method: 'POST',
-        url: 'http://localhost:3000/read/',
+        url: 'http://localhost:3000/read/task/',
         contentType: 'application/json',
         data: JSON.stringify({
             user_id: userId,
@@ -98,7 +114,7 @@ function readTasksRequest(userId, filter) {
 function deleteTaskRequest(taskId) {
     $.ajax({
         method: 'POST',
-        url: 'http://localhost:3000/delete/',
+        url: 'http://localhost:3000/delete/task/',
         contentType: 'application/json',
         data: JSON.stringify({
             task_id: taskId
@@ -135,12 +151,12 @@ function updateTaskListItem(taskId, taskText, taskComplete) {
     taskListItem.children('.task_complete').prop('checked', taskComplete);
     taskListItem.children('.task_text').text(taskText).css('text-decoration', (taskComplete) ? 'line-through' : 'none');
     taskListItem.children('.task_text_editor').val(taskText).css('text-decoration', (taskComplete) ? 'line-through' : 'none');
-    updateCompleteAllTasks();
+    updateCompleteAllTasksState();
 }
 
 function removeTaskListItem(taskId) {
     $('#' + taskId).remove();
-    updateCompleteAllTasks();
+    updateCompleteAllTasksState();
 }
 
 function addTaskListItem(taskId, taskText, taskComplete) {
@@ -174,7 +190,7 @@ function addTaskListItem(taskId, taskText, taskComplete) {
     })).append($('<div>').text('x').attr('class', 'task_remove').click(function () {
         deleteTaskRequest(taskId);
     })));
-    updateCompleteAllTasks();
+    updateCompleteAllTasksState();
 }
 
 function updateTasksList(tasks) {
@@ -185,7 +201,7 @@ function updateTasksList(tasks) {
     });
 }
 
-function updateCompleteAllTasks() {
+function updateCompleteAllTasksState() {
     $('#complete_all_tasks').prop('checked', !($('.task_complete:not(:checked)').length));
 }
 
@@ -278,8 +294,6 @@ function applyFilter() {
             break;
     }
 }
-
-readUserRequest(USER_NAME, USER_PASSWORD);
 
 // updateActiveTasksCounter();
 // applyFilter();
