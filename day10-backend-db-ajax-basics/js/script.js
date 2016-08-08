@@ -14,7 +14,9 @@ function createUserRequest(userName, userPassword) {
         dataType: 'json',
         success: function (response) {
             console.log('create user');
-            userId = response.data;
+            userId = response.data.user_id;
+            filter = response.data.filter;
+            hideLogin();
             readTasksRequest(userId, filter);
         }
     });
@@ -48,13 +50,13 @@ function readUserRequest(userName, userPassword) {
         }),
         dataType: 'json',
         success: function (response) {
-            console.log(response);
             if (response.length) {
                 alert('Wrong user name and password!');
                 return;
             }
-            userId = response.data[0].user_id;
-            filter = response.data[0].filter;
+            userId = response.data.user_id;
+            filter = response.data.filter;
+            hideLogin();
             readTasksRequest(userId, filter);
         }
     });
@@ -96,9 +98,10 @@ function updateTaskRequest(taskId, taskText, taskComplete) {
 }
 
 function readTasksRequest(userId, filter) {
+    console.log(userId + filter);
     $.ajax({
         method: 'POST',
-        url: 'http://localhost:3000/read/task/',
+        url: 'http://localhost:3000/read/tasks/',
         contentType: 'application/json',
         data: JSON.stringify({
             user_id: userId,
@@ -205,6 +208,20 @@ function updateCompleteAllTasksState() {
     $('#complete_all_tasks').prop('checked', !($('.task_complete:not(:checked)').length));
 }
 
+function hideLogin() {
+    $('#login').css('display', 'none');
+    $('#new_task').css('display', 'flex');
+    $('#tasks').css('display', 'flex');
+}
+
+$('input:submit').click(function () {
+    readUserRequest($('#user_name').val(), $('#user_password').val());
+});
+
+$('input:button').click(function () {
+    createUserRequest($('#user_name').val(), $('#user_password').val());
+});
+
 $('#complete_all_tasks').click(function () {
     $('.task_complete'+ (($(this).prop('checked')) ? ':not(:checked)' : ':checked')).click();
 });
@@ -266,34 +283,34 @@ $('#completed_tasks').click(function () {
     readTasksRequest(userId, filter);
 });
 
-function updateActiveTasksCounter() {
-    var tasks = tasksList.getElementsByClassName('task');
-    var counter = 0;
-    for (var i = 0; i < tasks.length; ++i) {
-        if (!tasks[i].getElementsByClassName('task_complete')[0].checked) {
-            ++counter;
-        }
-    }
-    var activeTasksCounter = document.getElementById('active_tasks_counter');
-    activeTasksCounter.innerHTML = 'Remain tasks: ' + counter;
-}
+// function updateActiveTasksCounter() {
+//     var tasks = tasksList.getElementsByClassName('task');
+//     var counter = 0;
+//     for (var i = 0; i < tasks.length; ++i) {
+//         if (!tasks[i].getElementsByClassName('task_complete')[0].checked) {
+//             ++counter;
+//         }
+//     }
+//     var activeTasksCounter = document.getElementById('active_tasks_counter');
+//     activeTasksCounter.innerHTML = 'Remain tasks: ' + counter;
+// }
 
-function applyFilter() {
-    if (!filter) {
-        filter = 'all';
-    }
-    switch (filter) {
-        case 'all':
-            allTasks.click();
-            break;
-        case 'active':
-            activeTasks.click();
-            break;
-        case 'complete':
-            completeTasks.click();
-            break;
-    }
-}
+// function applyFilter() {
+//     if (!filter) {
+//         filter = 'all';
+//     }
+//     switch (filter) {
+//         case 'all':
+//             allTasks.click();
+//             break;
+//         case 'active':
+//             activeTasks.click();
+//             break;
+//         case 'complete':
+//             completeTasks.click();
+//             break;
+//     }
+// }
 
 // updateActiveTasksCounter();
 // applyFilter();

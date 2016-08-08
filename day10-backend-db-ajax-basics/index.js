@@ -18,7 +18,7 @@ app.use('/css', express.static(__dirname + '/css'));
 app.use(bodyParser.json());
 
 app.get('/', function(req, res) {
-    res.sendFile(__dirname + '/login.html');
+    res.sendFile(__dirname + '/index.html');
 });
 
 app.post('/create/task/', function(req, res) {
@@ -67,7 +67,6 @@ app.post('/create/user/', function(req, res) {
         if (err) {
             throw err;
         }
-        res.sendFile(__dirname + '/login.html');
         res.send(JSON.stringify({data: result.insertId}));
     });
 });
@@ -88,8 +87,7 @@ app.post('/read/user/', function(req, res) {
         if (err) {
             throw err;
         }
-        res.sendFile(__dirname + '/index.html');
-        res.send(JSON.stringify({data: result}));
+        res.send(JSON.stringify({data: result[0]}));
     });
 });
 
