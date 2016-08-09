@@ -4,7 +4,7 @@ function createUserRequest(userName, userPassword) {
     var filter = 'all';
     $.ajax({
         method: 'POST',
-        url: 'http://localhost:3000/create/user/',
+        url: '/skobzin/day10-backend-db-ajax-basics/create/user/',
         contentType: 'application/json',
         data: JSON.stringify({
             user_name: userName,
@@ -14,23 +14,24 @@ function createUserRequest(userName, userPassword) {
         dataType: 'json',
         success: function (response) {
             console.log('create user');
-            userId = response.data.user_id;
-            filter = response.data.filter;
+            if (response.status != 'ok') {
+                alert(response.data);
+                return;
+            }
+            userId = response.data;
             hideLogin();
-            readTasksRequest(userId, filter);
+            applyFilter(filter);
         }
     });
 }
 
-function updateUserRequest(userId, userName, userPassword, filter) {
+function updateUserRequest(userId, filter) {
     $.ajax({
         method: 'POST',
-        url: 'http://localhost:3000/update/user/',
+        url: '/skobzin/day10-backend-db-ajax-basics/update/user/',
         contentType: 'application/json',
         data: JSON.stringify({
             user_id: userId,
-            user_name: userName,
-            user_password: userPassword,
             filter: filter
         }),
         dataType: 'json',
@@ -42,7 +43,7 @@ function updateUserRequest(userId, userName, userPassword, filter) {
 function readUserRequest(userName, userPassword) {
     $.ajax({
         method: 'POST',
-        url: 'http://localhost:3000/read/user/',
+        url: '/skobzin/day10-backend-db-ajax-basics/read/user/',
         contentType: 'application/json',
         data: JSON.stringify({
             user_name: userName,
@@ -50,14 +51,14 @@ function readUserRequest(userName, userPassword) {
         }),
         dataType: 'json',
         success: function (response) {
-            if (response.length) {
-                alert('Wrong user name and password!');
+            if (response.status != "ok") {
+                alert(response.data);
                 return;
             }
             userId = response.data.user_id;
             filter = response.data.filter;
             hideLogin();
-            readTasksRequest(userId, filter);
+            applyFilter(filter);
         }
     });
 }
@@ -66,7 +67,7 @@ function createTaskRequest(userId, taskText) {
     var taskComplete = false;
     $.ajax({
         method: 'POST',
-        url: 'http://localhost:3000/create/task/',
+        url: '/skobzin/day10-backend-db-ajax-basics/create/task/',
         contentType: 'application/json',
         data: JSON.stringify({
             user_id: userId,
@@ -83,7 +84,7 @@ function createTaskRequest(userId, taskText) {
 function updateTaskRequest(taskId, taskText, taskComplete) {
     $.ajax({
         method: 'POST',
-        url: 'http://localhost:3000/update/task/',
+        url: '/skobzin/day10-backend-db-ajax-basics/update/task/',
         contentType: 'application/json',
         data: JSON.stringify({
             task_id: taskId,
@@ -98,10 +99,9 @@ function updateTaskRequest(taskId, taskText, taskComplete) {
 }
 
 function readTasksRequest(userId, filter) {
-    console.log(userId + filter);
     $.ajax({
         method: 'POST',
-        url: 'http://localhost:3000/read/tasks/',
+        url: '/skobzin/day10-backend-db-ajax-basics/read/tasks/',
         contentType: 'application/json',
         data: JSON.stringify({
             user_id: userId,
@@ -117,7 +117,7 @@ function readTasksRequest(userId, filter) {
 function deleteTaskRequest(taskId) {
     $.ajax({
         method: 'POST',
-        url: 'http://localhost:3000/delete/task/',
+        url: '/skobzin/day10-backend-db-ajax-basics/delete/task/',
         contentType: 'application/json',
         data: JSON.stringify({
             task_id: taskId
@@ -197,6 +197,7 @@ function addTaskListItem(taskId, taskText, taskComplete) {
 }
 
 function updateTasksList(tasks) {
+    console.log(tasks);
     var tasksList = $('#tasks_list');
     tasksList.empty();
     tasks.forEach(function (task) {
@@ -214,12 +215,38 @@ function hideLogin() {
     $('#tasks').css('display', 'flex');
 }
 
+function applyFilter(filter) {
+    switch (filter) {
+        case 'all':
+            $('#all_tasks').click();
+            break;
+        case 'active':
+            $('#active_tasks').click();
+            break;
+        case 'complete':
+            $('#complete_tasks').click();
+            break;
+    }
+}
+
 $('input:submit').click(function () {
-    readUserRequest($('#user_name').val(), $('#user_password').val());
+    var userName = $('#user_name').val();
+    var userPassword = $('#user_password').val();
+    if ((!userName) || (!userPassword)) {
+        alert('User name or password is empty!');
+        return;
+    }
+    readUserRequest(userName, userPassword);
 });
 
 $('input:button').click(function () {
-    createUserRequest($('#user_name').val(), $('#user_password').val());
+    var userName = $('#user_name').val();
+    var userPassword = $('#user_password').val();
+    if ((!userName) || (!userPassword)) {
+        alert('User name or password is empty!');
+        return;
+    }
+    createUserRequest(userName, userPassword);
 });
 
 $('#complete_all_tasks').click(function () {
@@ -264,6 +291,7 @@ $('#all_tasks').click(function () {
     $('#active_tasks').css('backgroundColor', '#fcfcfc');
     $('#completed_tasks').css('backgroundColor', '#fcfcfc');
     filter = 'all';
+    updateUserRequest(userId, filter);
     readTasksRequest(userId, filter);
 });
 
@@ -272,6 +300,7 @@ $('#active_tasks').click(function () {
     $(this).css('backgroundColor', '#ad6069');
     $('#completed_tasks').css('backgroundColor', '#fcfcfc');
     filter = 'active';
+    updateUserRequest(userId, filter);
     readTasksRequest(userId, filter);
 });
 
@@ -280,6 +309,7 @@ $('#completed_tasks').click(function () {
     $('#active_tasks').css('backgroundColor', '#fcfcfc');
     $(this).css('backgroundColor', '#ad6069');
     filter = 'complete';
+    updateUserRequest(userId, filter);
     readTasksRequest(userId, filter);
 });
 
@@ -311,6 +341,3 @@ $('#completed_tasks').click(function () {
 //             break;
 //     }
 // }
-
-// updateActiveTasksCounter();
-// applyFilter();
