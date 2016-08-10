@@ -51,10 +51,7 @@ app.post('/skobzin/day10-backend-db-ajax-basics/update/user/', function(req, res
 
 app.post('/skobzin/day10-backend-db-ajax-basics/read/user/', function(req, res) {
     console.log('read user');
-    console.log(req.body.user_name+' '+req.body.user_password);
-    console.log(connection);
     connection.query('SELECT * FROM users WHERE user_name = ? AND user_password = ?', [req.body.user_name, req.body.user_password], function(err, result) {
-        console.log(result);
         if (!result.length) {
             res.send(JSON.stringify({
                 status: 'error',
@@ -72,32 +69,67 @@ app.post('/skobzin/day10-backend-db-ajax-basics/read/user/', function(req, res) 
 app.post('/skobzin/day10-backend-db-ajax-basics/create/task/', function(req, res) {
     console.log('create task');
     connection.query('INSERT INTO tasks (user_id, task_text, task_complete) VALUES (?, ?, ?)', [req.body.user_id, req.body.task_text, req.body.task_complete], function(err, result) {
-        res.send(JSON.stringify({
+        var response = {
             status: 'ok',
-            data: result.insertId}));
+            data: result.insertId
+        };
+        connection.query('SELECT COUNT(*) FROM tasks WHERE user_id = ? AND task_complete = 0', [req.body.user_id], function (err, result) {
+            response.count = result[0]['COUNT(*)'];
+            res.send(JSON.stringify(response));
+        });
     });
 });
 
 app.post('/skobzin/day10-backend-db-ajax-basics/update/task/', function(req, res) {
     console.log('update task');
     connection.query('UPDATE tasks SET task_text = ?, task_complete = ? WHERE task_id = ?', [req.body.task_text, req.body.task_complete, req.body.task_id], function(err) {
-        res.send(JSON.stringify({
-            result: 'ok'
-        }));
+        var response = {
+            status: 'ok'
+        };
+        connection.query('SELECT COUNT(*) FROM tasks WHERE user_id = ? AND task_complete = 0', [req.body.user_id], function (err, result) {
+            response.count = result[0]['COUNT(*)'];
+            res.send(JSON.stringify(response));
+        });
     });
 });
 
 app.post('/skobzin/day10-backend-db-ajax-basics/read/tasks/', function(req, res) {
     console.log('read tasks');
     connection.query('SELECT * FROM tasks WHERE user_id = ?' + ((req.body.filter != 'all') ? ' AND task_complete = ?' : ''), [req.body.user_id, (req.body.filter == 'complete')], function(err, result) {
-        res.send(JSON.stringify({data: result}));
+        var response = {
+            status: 'ok',
+            data: result
+        };
+        connection.query('SELECT COUNT(*) FROM tasks WHERE user_id = ? AND task_complete = 0', [req.body.user_id], function (err, result) {
+            response.count = result[0]['COUNT(*)'];
+            res.send(JSON.stringify(response));
+        });
     });
 });
 
 app.post('/skobzin/day10-backend-db-ajax-basics/delete/task/', function(req, res) {
     console.log('delete task');
     connection.query('DELETE FROM tasks WHERE task_id = ?', [req.body.task_id], function(err) {
-        res.send(JSON.stringify({}));
+        var response = {
+            status: 'ok'
+        };
+        connection.query('SELECT COUNT(*) FROM tasks WHERE user_id = ? AND task_complete = 0', [req.body.user_id], function (err, result) {
+            response.count = result[0]['COUNT(*)'];
+            res.send(JSON.stringify(response));
+        });
+    });
+});
+
+app.post('/skobzin/day10-backend-db-ajax-basics/delete/tasks/', function(req, res) {
+    console.log('delete tasks');
+    connection.query('DELETE FROM tasks WHERE user_id = ? AND task_complete = 1', [req.body.user_id], function(err, result) {
+        var response = {
+            status: 'ok'
+        };
+        connection.query('SELECT COUNT(*) FROM tasks WHERE user_id = ? AND task_complete = 0', [req.body.user_id], function (err, result) {
+            response.count = result[0]['COUNT(*)'];
+            res.send(JSON.stringify(response));
+        });
     });
 });
 

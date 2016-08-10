@@ -77,23 +77,26 @@ function createTaskRequest(userId, taskText) {
         dataType: 'json',
         success: function (response) {
             addTaskListItem(response.data, taskText, taskComplete);
+            updateActiveTasksCounter(response.count);
         }
     });
 }
 
-function updateTaskRequest(taskId, taskText, taskComplete) {
+function updateTaskRequest(userId, taskId, taskText, taskComplete) {
     $.ajax({
         method: 'POST',
         url: '/skobzin/day10-backend-db-ajax-basics/update/task/',
         contentType: 'application/json',
         data: JSON.stringify({
+            user_id: userId,
             task_id: taskId,
             task_text: taskText,
             task_complete: taskComplete
         }),
         dataType: 'json',
-        success: function () {
-            updateTaskListItem(taskId, taskText, taskComplete);
+        success: function (response) {
+            updateTaskListItem(taskId, taskText, taskComplete, filter);
+            updateActiveTasksCounter(response.count);
         }
     });
 }
@@ -110,21 +113,40 @@ function readTasksRequest(userId, filter) {
         dataType: 'json',
         success: function (response) {
             updateTasksList(response.data);
+            updateActiveTasksCounter(response.count);
         }
     });
 }
 
-function deleteTaskRequest(taskId) {
+function deleteTaskRequest(userId, taskId) {
     $.ajax({
         method: 'POST',
         url: '/skobzin/day10-backend-db-ajax-basics/delete/task/',
         contentType: 'application/json',
         data: JSON.stringify({
+            user_id: userId,
             task_id: taskId
         }),
         dataType: 'json',
-        success: function () {
+        success: function (response) {
             removeTaskListItem(taskId);
+            updateActiveTasksCounter(response.count);
+        }
+    });
+}
+
+function deleteCompletedTasksRequest(userId) {
+    $.ajax({
+        method: 'POST',
+        url: '/skobzin/day10-backend-db-ajax-basics/delete/tasks/',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            user_id: userId
+        }),
+        dataType: 'json',
+        success: function (response) {
+            applyFilter(filter);
+            updateActiveTasksCounter(response.count);
         }
     });
 }
@@ -149,11 +171,15 @@ function hideTaskRemove(taskId) {
     $('#' + taskId).children('.task_remove').css('visibility', 'hidden');
 }
 
-function updateTaskListItem(taskId, taskText, taskComplete) {
+function updateTaskListItem(taskId, taskText, taskComplete, filter) {
     var taskListItem = $('#' + taskId);
-    taskListItem.children('.task_complete').prop('checked', taskComplete);
-    taskListItem.children('.task_text').text(taskText).css('text-decoration', (taskComplete) ? 'line-through' : 'none');
-    taskListItem.children('.task_text_editor').val(taskText).css('text-decoration', (taskComplete) ? 'line-through' : 'none');
+    if ((filter == 'active') || (filter == 'complete')) {
+        taskListItem.css('display', 'none');
+    } else {
+        taskListItem.children('.task_complete').prop('checked', taskComplete);
+        taskListItem.children('.task_text').text(taskText).css('text-decoration', (taskComplete) ? 'line-through' : 'none');
+        taskListItem.children('.task_text_editor').val(taskText).css('text-decoration', (taskComplete) ? 'line-through' : 'none');
+    }
     updateCompleteAllTasksState();
 }
 
@@ -169,12 +195,12 @@ function addTaskListItem(taskId, taskText, taskComplete) {
         hideTaskRemove(taskId);
     }).append($('<input>').attr('type', 'checkbox').attr('class', 'task_complete').prop('checked', taskComplete).click(function () {
         taskComplete = $(this).prop('checked');
-        updateTaskRequest(taskId, taskText, taskComplete);
+        updateTaskRequest(userId, taskId, taskText, taskComplete);
     })).append($('<div>').attr('class', 'task_text').text(taskText).css('text-decoration', (taskComplete) ? 'line-through' : 'none').css('display', 'block').dblclick(function () {
         showTaskTextEditor(taskId);
     })).append($('<input>').attr('type', 'text').attr('class', 'task_text_editor').val(taskText).css('text-decoration', (taskComplete) ? 'line-through' : 'none').css('display', 'none').blur(function () {
         hideTaskTextEditor(taskId);
-        updateTaskListItem(taskId, taskText, taskComplete);
+        updateTaskListItem(taskId, taskText, taskComplete, filter);
     }).keyup(function (event) {
         if (event.keyCode == 27) {
             $(this).blur();
@@ -189,9 +215,9 @@ function addTaskListItem(taskId, taskText, taskComplete) {
             return;
         }
         hideTaskTextEditor(taskId);
-        updateTaskRequest(taskId, taskText, taskComplete);
+        updateTaskRequest(userId, taskId, taskText, taskComplete);
     })).append($('<div>').text('x').attr('class', 'task_remove').click(function () {
-        deleteTaskRequest(taskId);
+        deleteTaskRequest(userId, taskId);
     })));
     updateCompleteAllTasksState();
 }
@@ -209,6 +235,10 @@ function updateCompleteAllTasksState() {
     $('#complete_all_tasks').prop('checked', !($('.task_complete:not(:checked)').length));
 }
 
+function updateActiveTasksCounter(count) {
+    $('#active_tasks_counter').text('Remain tasks: ' + count);
+}
+
 function hideLogin() {
     $('#login').css('display', 'none');
     $('#new_task').css('display', 'flex');
@@ -224,7 +254,7 @@ function applyFilter(filter) {
             $('#active_tasks').click();
             break;
         case 'complete':
-            $('#complete_tasks').click();
+            $('#completed_tasks').click();
             break;
     }
 }
@@ -254,7 +284,7 @@ $('#complete_all_tasks').click(function () {
 });
 
 $('#remove_completed_tasks').click(function () {
-    readTasksRequest(userId, 'complete');
+    deleteCompletedTasksRequest(userId);
 });
 
 $('#new_task_text_editor').keyup(function (event) {
@@ -273,18 +303,6 @@ $('#new_task_text_editor').keyup(function (event) {
     $(this).val('');
     createTaskRequest(userId, taskText);
 });
-
-// removeCompletedTasks.onclick = function() {
-//     var tasks = tasksList.getElementsByClassName('task');
-//     for (var i = 0; i < tasks.length; ++i) {
-//         var completeTask = tasks[i].getElementsByClassName('task_complete')[0];
-//         var removeTask = tasks[i].getElementsByClassName('task_remove')[0];
-//         if (completeTask.checked) {
-//             removeTask.click();
-//             --i; // crutch ))
-//         }
-//     }
-// };
 
 $('#all_tasks').click(function () {
     $(this).css('backgroundColor', '#ad6069');
@@ -312,32 +330,3 @@ $('#completed_tasks').click(function () {
     updateUserRequest(userId, filter);
     readTasksRequest(userId, filter);
 });
-
-// function updateActiveTasksCounter() {
-//     var tasks = tasksList.getElementsByClassName('task');
-//     var counter = 0;
-//     for (var i = 0; i < tasks.length; ++i) {
-//         if (!tasks[i].getElementsByClassName('task_complete')[0].checked) {
-//             ++counter;
-//         }
-//     }
-//     var activeTasksCounter = document.getElementById('active_tasks_counter');
-//     activeTasksCounter.innerHTML = 'Remain tasks: ' + counter;
-// }
-
-// function applyFilter() {
-//     if (!filter) {
-//         filter = 'all';
-//     }
-//     switch (filter) {
-//         case 'all':
-//             allTasks.click();
-//             break;
-//         case 'active':
-//             activeTasks.click();
-//             break;
-//         case 'complete':
-//             completeTasks.click();
-//             break;
-//     }
-// }
