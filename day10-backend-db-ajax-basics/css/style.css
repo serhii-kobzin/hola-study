@@ -39,10 +39,22 @@ body {
 }
 
 #login {
-    width: 300px;
+    width: 270px;
     margin: 300px auto;
-    padding: 10px;
+    padding: 10px 10px 0;
     border: 1px solid #aaaaaa;
+}
+
+#login div {
+    padding-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#buttons {
+    padding: 10px 70px;
+    border-top: 1px solid #aaaaaa;
 }
 
 #new_task {

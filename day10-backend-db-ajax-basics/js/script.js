@@ -59,6 +59,7 @@ function readUserRequest(userName, userPassword) {
             filter = response.data.filter;
             hideLogin();
             applyFilter(filter);
+            $('#new_task_text_editor').focus();
         }
     });
 }
@@ -259,6 +260,30 @@ function applyFilter(filter) {
     }
 }
 
+$('#user_name').keyup(function (event) {
+    if (event.keyCode != 13) {
+        return;
+    }
+    var userPassword = $('#user_password');
+    if (userPassword.val()) {
+        $('input:submit').click();
+    } else {
+        userPassword.focus();
+    }
+});
+
+$('#user_password').keyup(function (event) {
+    if (event.keyCode != 13) {
+        return;
+    }
+    var userName = $('#user_name');
+    if (userName.val()) {
+        $('input:submit').click();
+    } else {
+        userName.focus();
+    }
+});
+
 $('input:submit').click(function () {
     var userName = $('#user_name').val();
     var userPassword = $('#user_password').val();
@@ -330,3 +355,5 @@ $('#completed_tasks').click(function () {
     updateUserRequest(userId, filter);
     readTasksRequest(userId, filter);
 });
+
+$('#user_name').focus();
