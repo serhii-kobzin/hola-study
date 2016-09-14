@@ -2,3 +2,5 @@ day3-hello-linux/
 .idea/
 node_modules/
 .ssh/
+centos/
+ubuntu/
