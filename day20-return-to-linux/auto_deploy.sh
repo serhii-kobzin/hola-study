@@ -3,22 +3,27 @@
 DEST_DIR="/var/www/chat.io"
 
 function is_program_installed {
-  local result=1
-  type $1>/dev/null 2>/dev/null || { local result=0; }
-  echo $result
+	local result=1
+	type $1>/dev/null 2>/dev/null || { local result=0; }
+	echo $result
 }
 
 function install_program {
-  if [ `is_program_installed $1` == 0 ]; then
-    if [ $1 == "nodejs" ]; then
-      if [$installer == "apt-get"]; then
-      	curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
-      else
-      	curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
-      fi
-    fi
-    sudo $installer -y install $1
-  fi
+	if [ `is_program_installed $1` == 0 ]; then
+		if [ $1 == "nodejs" ]; then
+			if [ $installer == "yum" ]; then
+				curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
+			else
+				curl -sL https://deb.nodesource.com/setup_4.x | sudo -E bash -
+			fi
+		fi
+		if [ $1 == "nginx" ]; then
+			if [ $installer == "yum" ]; then
+				sudo mv $DEST_DIR/nginx.repo /etc/yum.repos.d
+			fi
+		fi
+		sudo $installer -y install $1
+	fi
 }
 
 # Define OS version
@@ -27,21 +32,39 @@ grep CentOS /etc/*-release > /dev/null && { installer="yum"; }
 
 # Install soft
 install_program mc
-install_program git
 install_program nodejs
-install_program npm
-install_program nginx
+install_program git
 
 # Get chat from GitHub server
 if ! [ -d $DEST_DIR ]; then
-  git clone https://github.com/serhii-kobzin/day5-nodejs-basics.git $DEST_DIR
+	sudo git clone https://github.com/serhii-kobzin/day5-nodejs-basics.git $DEST_DIR
 fi
 
 # Install npm modules
 cd $DEST_DIR
-npm install
+sudo npm install
 
-# Apply nginx settings
-cp $DEST_DIR/chat.io /etc/nginx/sites-available
-sudo ln -s /etc/nginx/sites-available/chat.io /etc/nginx/sites-enabled
-sudo service nginx restart
+# Install nginx
+install_program nginx
+
+#Apply nginx settings
+if [ $installer == "yum" ]; then
+	sudo mv $DEST_DIR/chat.conf /etc/nginx/conf.d
+	setenforce Permissive
+	sudo systemctl restart nginx.service
+else
+	sudo mv $DEST_DIR/chat.conf /etc/nginx/sites-available
+	sudo ln -s /etc/nginx/sites-available/chat.io /etc/nginx/sites-enabled
+	sudo service nginx restart
+fi 
+
+#Create daemon for node and start it
+sudo mv $DEST_DIR/chat /etc/init.d
+sudo chmod +x /etc/init.d/chat
+if [ $installer == "yum" ]; then
+	sudo chkconfig --add chat
+	sudo systemctl restart chat.service
+else
+	sudo update-rc.d chat defaults
+	sudo service chat start
+fi
