@@ -49,21 +49,27 @@ install_program nginx
 
 #Apply nginx settings
 if [ $installer == "yum" ]; then
-	sudo mv $DEST_DIR/chat.conf /etc/nginx/conf.d
+	if [ -f $DEST_DIR/chat.conf ]; then
+		sudo mv $DEST_DIR/chat.conf /etc/nginx/conf.d
+	fi
 	setenforce Permissive
 	sudo systemctl restart nginx.service
 else
-	sudo mv $DEST_DIR/chat.conf /etc/nginx/sites-available
+	if [ -f $DEST_DIR/chat.conf ]; then
+		sudo mv $DEST_DIR/chat.conf /etc/nginx/sites-available
+	fi
 	sudo ln -s /etc/nginx/sites-available/chat.io /etc/nginx/sites-enabled
 	sudo service nginx restart
 fi 
 
 #Create daemon for node and start it
-sudo mv $DEST_DIR/chat /etc/init.d
-sudo chmod +x /etc/init.d/chat
+if [ -f $DEST_DIR/chat.conf ]; then
+	sudo mv $DEST_DIR/chat /etc/init.d
+	sudo chmod +x /etc/init.d/chat
+fi
 if [ $installer == "yum" ]; then
 	sudo chkconfig --add chat
-	sudo systemctl restart chat.service
+	sudo systemctl start chat.service
 else
 	sudo update-rc.d chat defaults
 	sudo service chat start

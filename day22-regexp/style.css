@@ -1,0 +1,25 @@
+form {
+  width: 500px;
+  margin: 0 auto;
+}
+
+#regexp, #text, #highlighter {
+  width: 100%;
+  box-sizing: border-box;
+  border: solid 1px #808080;
+}
+
+#text, #highlighter {
+  height: 400px;
+  padding: 2px;
+  font: 12px sans-serif;
+  overflow: auto;
+}
+
+#text {
+  resize: none;
+  display: none;
+}
+#regexp, #text, #highlighter, #submit {
+  margin: 2px 0;
+}

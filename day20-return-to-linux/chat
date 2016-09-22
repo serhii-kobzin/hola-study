@@ -6,7 +6,7 @@ grep CentOS /etc/*-release > /dev/null && { installer="yum"; }
 
 # chkconfig: 2345 90 10
 
-# Source function library.
+# Source function library
 if [ $installer == "yum" ]; then
 	. /etc/init.d/functions
 fi
@@ -31,7 +31,8 @@ SCRIPTNAME=/etc/init.d/$NAME
 do_start() {
 	if [ $installer == "yum" ]; then
 		if [ ! -f $LOCK_FILE ]; then
-			sudo touch $LOCKFILE
+			runuser -l $NAME -c $DAEMON $RUNFILE
+			touch $LOCKFILE
 		else
 			exit 1
 		fi
