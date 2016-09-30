@@ -224,7 +224,6 @@ function addTaskListItem(taskId, taskText, taskComplete) {
 }
 
 function updateTasksList(tasks) {
-    console.log(tasks);
     var tasksList = $('#tasks_list');
     tasksList.empty();
     tasks.forEach(function (task) {

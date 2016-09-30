@@ -2,97 +2,116 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Contacts search</title>
+  <title>ToDo List</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.0/react-dom.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.6.15/browser.js"></script>
-  <link rel="stylesheet" type="text/css" href="style.css">
-</head>
-<body>
-  <div id='content'></div>
-  <script type="text/babel">
-    var CONTACTS = [
-      {
-        id: 1,
-        name: 'Darth Vader',
-        phoneNumber: '+250966666666',
-        image: 'http://cs7.pikabu.ru/images/big_size_comm_an/2014-03_7/13962622876915.gif'
-      }, {
-        id: 2,
-        name: 'Princess Leia',
-        phoneNumber: '+250966344466',
-        image: 'http://images6.fanpop.com/image/photos/33100000/CARRIE-FISHER-anakin-vader-and-princess-leia-33186069-190-149.gif'
-      }, {
-        id: 3,
-        name: 'Luke Skywalker',
-        phoneNumber: '+250976654433',
-        image: 'http://www.youshouldshare.me/wp-content/uploads/2015/03/14264215682890-anigif_enhanced-buzz-13518-1367608452-4.gif'
-      }, {
-        id: 4,
-        name: 'Chewbacca',
-        phoneNumber: '+250456784935',
-        image: 'https://media.giphy.com/media/RUUdVZqwpfTRS/giphy.gif'
-      }
-    ];
-
-    var Contact = React.createClass({
-      render: function() {
-        return (
-            <li className="contact">
-              <img className="contact-image" src={this.props.image} width="60px" height="60px" />
-              <div className="contact-info">
-                <div className="contact-name"> {this.props.name} </div>
-                <div className="contact-number"> {this.props.phoneNumber} </div>
-              </div>
-            </li>
-        );
-      }
-    });
-
-    var ContactsList = React.createClass({
+  <script type="text/babel" defer>
+    var App = React.createClass({
       getInitialState: function() {
         return {
-          displayedContacts: CONTACTS
+          filter: "all",
+          tasks: [
+            {complete: false, text: "Постричь кота"},
+            {complete: false, text: "Поспать"},
+            {complete: false, text: "Сходить на работу"}
+          ]
         };
       },
-
-      handleSearch: function(event) {
-        var searchQuery = event.target.value.toLowerCase();
-        var displayedContacts = CONTACTS.filter(function(el) {
-          var searchValue = el.name.toLowerCase();
-          return searchValue.indexOf(searchQuery) !== -1;
-        });
-
-        this.setState({
-          displayedContacts: displayedContacts
-        });
-      },
-
       render: function() {
         return (
-            <div className="contacts">
-              <input type="text" className="search-field" onChange={this.handleSearch} />
-              <ul className="contacts-list">
-                {
-                  this.state.displayedContacts.map(function(el) {
-                    return <Contact
-                        key={el.id}
-                        name={el.name}
-                        phoneNumber={el.phoneNumber}
-                        image={el.image}
-                    />;
-                  })
-                }
-              </ul>
+          <div>
+            <div id="new_task">
+              <CompleteAllTasks tasks={this.state.tasks} onChange={this.onCompleteAllTasksClick} />
+              <input type="text" placeholder="New task" onKeyUp={this.onNewTaskTextKeyUp} />
             </div>
+            <div id="tasks">
+              <div id="tasks_list">
+                <TasksList tasks={this.state.tasks} filter={this.state.filter} onChange={this.onCompleteTaskClick} />
+              </div>
+              <div id="tasks_manager">
+                <div id="tasks_filter">
+                  <div id="all_tasks">All</div>
+                  <div id="active_tasks">Active</div>
+                  <div id="complete_tasks">Complete</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      },
+      onCompleteTaskClick: function(event) {
+        let index = event.target.dataset.index;
+        let tasks = this.state.tasks;
+        tasks[index].complete = !tasks[index].complete;
+        this.setState({tasks: tasks});
+      },
+      onCompleteAllTasksClick: function(event) {
+        let isChecked = event.target.checked;
+        let tasks = this.state.tasks;
+        tasks.forEach(task => {
+          task.complete = isChecked;
+        });
+        this.setState({tasks: tasks});
+      },
+      onNewTaskTextKeyUp: function(event) {
+        let keyCode = event.keyCode;
+        if (keyCode == 27) {
+          event.target.value = "";
+          return;
+        }
+        if (keyCode != 13) {
+          return;
+        }
+        let taskText = event.target.value;
+        if (taskText == "") {
+          alert("Task is empty!");
+          return;
+        }
+        event.target.value = "";
+        let tasks = this.state.tasks;
+        tasks.push({complete: false, text: taskText});
+        this.setState({tasks: tasks});
+      }
+    });
+
+    var Task = React.createClass({
+      render: function() {
+        return (
+          <div>
+            <input type="checkbox" checked={this.props.complete} data-index={this.props.index} onChange={this.props.onChange} />{this.props.text}
+          </div>
         );
       }
     });
 
-    ReactDOM.render(
-        <ContactsList />,
-        document.getElementById("content")
-    );
+    var TasksList = React.createClass({
+      render: function() {
+        let filter = this.props.filter;
+        return (
+          <div>
+            {this.props.tasks.map((task, index) => {
+              if ((filter == "all") || ((filter == "active") && (!task.complete)) || ((filter == "complete") && (task.complete))) {
+                return <Task key={index} complete={task.complete} text={task.text} index={index} onChange={this.props.onChange} />
+              }
+            })}
+          </div>
+        );
+      }
+    });
+
+    var CompleteAllTasks = React.createClass({
+      render: function() {
+        let isChecked = this.props.tasks.every(task => task.complete);
+        return <input type="checkbox" checked={isChecked} onChange={this.props.onChange} />
+      }
+    });
+
+    ReactDOM.render(<App />, document.getElementById("app"));
   </script>
+</head>
+<body>
+  <div id="app"></div>
 </body>
 </html>
