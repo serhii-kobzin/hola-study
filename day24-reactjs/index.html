@@ -12,6 +12,7 @@
       getInitialState: function() {
         return {
           filter: "all",
+          filters: ["all", "active", "complete"],
           tasks: [
             {complete: false, text: "Постричь кота"},
             {complete: false, text: "Поспать"},
@@ -32,9 +33,7 @@
               </div>
               <div id="tasks_manager">
                 <div id="tasks_filter">
-                  <div id="all_tasks">All</div>
-                  <div id="active_tasks">Active</div>
-                  <div id="complete_tasks">Complete</div>
+                  <Filters filters={this.state.filters} onClick={this.onFilterClick} />
                 </div>
               </div>
             </div>
@@ -73,6 +72,10 @@
         let tasks = this.state.tasks;
         tasks.push({complete: false, text: taskText});
         this.setState({tasks: tasks});
+      },
+      onFilterClick: function(event) {
+        let filter = event.target.dataset.filter;
+        this.setState({filter: filter});
       }
     });
 
@@ -105,6 +108,22 @@
       render: function() {
         let isChecked = this.props.tasks.every(task => task.complete);
         return <input type="checkbox" checked={isChecked} onChange={this.props.onChange} />
+      }
+    });
+
+    var Filter = React.createClass({
+      render: function() {
+        return <div data-filter={this.props.filter} onClick={this.props.onClick}>{this.props.text}</div>
+      }
+    });
+
+    var Filters = React.createClass({
+      render: function() {
+        return (
+          <div>
+            {this.props.filters.map((filter, index) => (<Filter key={index} text={filter.toUpperCase()} filter={filter} onClick={this.props.onClick} />))}
+          </div>
+        );
       }
     });
 
